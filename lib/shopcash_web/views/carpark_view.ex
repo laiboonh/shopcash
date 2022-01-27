@@ -13,6 +13,7 @@ defmodule ShopcashWeb.CarparkView do
   def render("carpark.json", %{carpark: carpark}) do
     %{
       id: carpark.id,
+      number: carpark.number,
       address: carpark.address,
       latitude: carpark.latitude,
       longitude: carpark.longitude

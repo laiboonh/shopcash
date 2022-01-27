@@ -11,6 +11,7 @@ defmodule Shopcash.GovtFixtures do
     {:ok, carpark} =
       attrs
       |> Enum.into(%{
+        number: "some number",
         address: "some address",
         latitude: "120.5",
         longitude: "120.5"

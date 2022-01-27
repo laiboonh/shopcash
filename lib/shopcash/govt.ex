@@ -10,8 +10,10 @@ defmodule Shopcash.Govt do
   alias Shopcash.Govt.Location
   alias NimbleCSV.RFC4180, as: CSV
 
-  def load_carparks do
-    "../../priv/hdb-carpark-information.csv"
+  @carpark_information_file "../../priv/hdb-carpark-information.csv"
+
+  def load_carparks(file \\ @carpark_information_file) do
+    file
     |> Path.expand(__DIR__)
     |> File.stream!()
     |> CSV.parse_stream()

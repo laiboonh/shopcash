@@ -42,7 +42,8 @@ defmodule Shopcash.MixProject do
       {:jason, "~> 1.2"},
       {:plug_cowboy, "~> 2.5"},
       {:nimble_csv, "~> 1.1"},
-      {:httpoison, "~> 1.8"}
+      {:httpoison, "~> 1.8"},
+      {:mox, "~> 1.0", only: :test}
     ]
   end
 
