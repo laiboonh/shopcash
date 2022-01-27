@@ -17,3 +17,11 @@ Ready to run in production? Please [check our deployment guides](https://hexdocs
   * Docs: https://hexdocs.pm/phoenix
   * Forum: https://elixirforum.com/c/phoenix-forum
   * Source: https://github.com/phoenixframework/phoenix
+
+
+## How to
+
+### Load carpark information 
+Note: we stream the csv data file and configure http client to use a connection pool. So we shouldn't be running into memory issues.
+
+`mix load_carpark`
