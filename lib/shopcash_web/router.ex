@@ -5,7 +5,8 @@ defmodule ShopcashWeb.Router do
     plug :accepts, ["json"]
   end
 
-  scope "/api", ShopcashWeb do
+  scope "/", ShopcashWeb do
     pipe_through :api
+    resources "/carparks", CarparkController
   end
 end
