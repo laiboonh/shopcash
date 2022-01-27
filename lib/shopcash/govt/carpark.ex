@@ -3,6 +3,7 @@ defmodule Shopcash.Govt.Carpark do
   import Ecto.Changeset
 
   schema "carparks" do
+    field :number, :string
     field :address, :string
     field :latitude, :decimal
     field :longitude, :decimal
@@ -13,7 +14,8 @@ defmodule Shopcash.Govt.Carpark do
   @doc false
   def changeset(carpark, attrs) do
     carpark
-    |> cast(attrs, [:address, :latitude, :longitude])
-    |> validate_required([:address, :latitude, :longitude])
+    |> cast(attrs, [:number, :address, :latitude, :longitude])
+    |> validate_required([:number, :address, :latitude, :longitude])
+    |> unique_constraint(:number)
   end
 end

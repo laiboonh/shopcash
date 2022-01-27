@@ -7,6 +7,27 @@ defmodule Shopcash.Govt do
   alias Shopcash.Repo
 
   alias Shopcash.Govt.Carpark
+  alias Shopcash.Govt.Location
+  alias NimbleCSV.RFC4180, as: CSV
+
+  def load_carparks do
+    "../../priv/hdb-carpark-information.csv"
+    |> Path.expand(__DIR__)
+    |> File.stream!()
+    |> CSV.parse_stream()
+    |> Stream.map(fn [car_park_no, address, x_coord, y_coord | _tail] ->
+      location = Location.new(x_coord, y_coord)
+
+      {:ok, _} =
+        create_carpark(%{
+          number: car_park_no,
+          address: address,
+          latitude: location.latitude,
+          longitude: location.longitude
+        })
+    end)
+    |> Stream.run()
+  end
 
   @doc """
   Returns the list of carparks.
