@@ -6,16 +6,18 @@ defmodule ShopcashWeb.CarparkControllerTest do
   alias Shopcash.Govt.Carpark
 
   @create_attrs %{
+    number: "some number",
     address: "some address",
     latitude: "120.5",
     longitude: "120.5"
   }
   @update_attrs %{
+    number: "some updated number",
     address: "some updated address",
     latitude: "456.7",
     longitude: "456.7"
   }
-  @invalid_attrs %{address: nil, latitude: nil, longitude: nil}
+  @invalid_attrs %{number: nil, address: nil, latitude: nil, longitude: nil}
 
   setup %{conn: conn} do
     {:ok, conn: put_req_header(conn, "accept", "application/json")}
@@ -37,6 +39,7 @@ defmodule ShopcashWeb.CarparkControllerTest do
 
       assert %{
                "id" => ^id,
+               "number" => "some number",
                "address" => "some address",
                "latitude" => "120.5",
                "longitude" => "120.5"
@@ -60,6 +63,7 @@ defmodule ShopcashWeb.CarparkControllerTest do
 
       assert %{
                "id" => ^id,
+               "number" => "some updated number",
                "address" => "some updated address",
                "latitude" => "456.7",
                "longitude" => "456.7"

@@ -1,7 +1,12 @@
 defmodule Shopcash.GovtTest do
   use Shopcash.DataCase
 
+  import Mox
+
   alias Shopcash.Govt
+
+  # Make sure mocks are verified when the test exits
+  setup :verify_on_exit!
 
   describe "carparks" do
     alias Shopcash.Govt.Carpark
@@ -9,6 +14,49 @@ defmodule Shopcash.GovtTest do
     import Shopcash.GovtFixtures
 
     @invalid_attrs %{address: nil, latitude: nil, longitude: nil}
+
+    test "load_carparks/0 loads all file data into database" do
+      data = """
+      "car_park_no","address","x_coord","y_coord","car_park_type","type_of_parking_system","short_term_parking","free_parking","night_parking","car_park_decks","gantry_height","car_park_basement"
+      "ACB","BLK 270/271 ALBERT CENTRE BASEMENT CAR PARK","30314.7936","31490.4942","BASEMENT CAR PARK","ELECTRONIC PARKING","WHOLE DAY","NO","YES","1","1.80","Y"
+      "ACM","BLK 98A ALJUNIED CRESCENT","33758.4143","33695.5198","MULTI-STOREY CAR PARK","ELECTRONIC PARKING","WHOLE DAY","SUN & PH FR 7AM-10.30PM","YES","5","2.10","N"
+      """
+
+      Shopcash.Govt.Http.MockClient
+      |> expect(:svy21_to_wgs84, 2, fn _x_coord, _y_coord ->
+        %{"latitude" => 1.23, "longitude" => 4.56}
+      end)
+
+      full_path = Path.expand("carpark_info.csv", __DIR__)
+
+      {:ok, file} = File.open(full_path, [:write])
+
+      :ok = IO.binwrite(file, data)
+      :ok = File.close(file)
+
+      try do
+        assert Govt.list_carparks() == []
+
+        assert Govt.load_carparks(full_path) == :ok
+
+        [first, second] = Govt.list_carparks()
+
+        latitude = Decimal.from_float(1.23)
+        longitude = Decimal.from_float(4.56)
+
+        assert %Shopcash.Govt.Carpark{
+                 latitude: ^latitude,
+                 longitude: ^longitude
+               } = first
+
+        assert %Shopcash.Govt.Carpark{
+                 latitude: ^latitude,
+                 longitude: ^longitude
+               } = second
+      after
+        :ok = File.rm!(full_path)
+      end
+    end
 
     test "list_carparks/0 returns all carparks" do
       carpark = carpark_fixture()
@@ -21,7 +69,12 @@ defmodule Shopcash.GovtTest do
     end
 
     test "create_carpark/1 with valid data creates a carpark" do
-      valid_attrs = %{address: "some address", latitude: "120.5", longitude: "120.5"}
+      valid_attrs = %{
+        number: "some number",
+        address: "some address",
+        latitude: "120.5",
+        longitude: "120.5"
+      }
 
       assert {:ok, %Carpark{} = carpark} = Govt.create_carpark(valid_attrs)
       assert carpark.address == "some address"
