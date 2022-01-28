@@ -15,7 +15,17 @@ defmodule ShopcashWeb.CarparkController do
       }
 
       carparks = Govt.nearest_available_carparks(current_location)
-      render(conn, "nearest.json", carparks: carparks)
+
+      %{page: page, per_page: per_page} = valid_params
+
+      if page > 0 && per_page > 0 do
+        carparks =
+          Scrivener.paginate(carparks, %Scrivener.Config{page_number: page, page_size: per_page}).entries
+
+        render(conn, "nearest.json", carparks: carparks)
+      else
+        render(conn, "nearest.json", carparks: carparks)
+      end
     else
       {:error, changeset} ->
         conn
@@ -27,18 +37,24 @@ defmodule ShopcashWeb.CarparkController do
   defp nearest_params(params) do
     default = %{
       latitude: nil,
-      longitude: nil
+      longitude: nil,
+      page: 0,
+      per_page: 0
     }
 
     types = %{
       latitude: :float,
-      longitude: :float
+      longitude: :float,
+      page: :integer,
+      per_page: :integer
     }
 
     changeset =
       {default, types}
       |> Ecto.Changeset.cast(params, Map.keys(types))
       |> Ecto.Changeset.validate_required([:latitude, :longitude])
+      |> Ecto.Changeset.validate_number(:page, greater_than: 0)
+      |> Ecto.Changeset.validate_number(:per_page, greater_than: 0)
 
     if changeset.valid? do
       {:ok, Ecto.Changeset.apply_changes(changeset)}
