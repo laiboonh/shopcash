@@ -7,6 +7,23 @@ defmodule ShopcashWeb.CarparkController do
 
   action_fallback ShopcashWeb.FallbackController
 
+  def nearest(conn, params) do
+    with {:ok, valid_params} <- nearest_params(params) do
+      current_location = %Location{
+        latitude: valid_params.latitude,
+        longitude: valid_params.longitude
+      }
+
+      carparks = Govt.nearest_available_carparks(current_location)
+      render(conn, "nearest.json", carparks: carparks)
+    else
+      {:error, changeset} ->
+        conn
+        |> put_status(:bad_request)
+        |> render("error.json", message: prepare_error_message(changeset))
+    end
+  end
+
   defp nearest_params(params) do
     default = %{
       latitude: nil,
@@ -30,16 +47,17 @@ defmodule ShopcashWeb.CarparkController do
     end
   end
 
-  def nearest(conn, params) do
-    with {:ok, valid_params} <- nearest_params(params) do
-      current_location = %Location{
-        latitude: valid_params.latitude,
-        longitude: valid_params.longitude
-      }
+  defp prepare_error_message(changeset) do
+    errors =
+      Ecto.Changeset.traverse_errors(changeset, fn {msg, opts} ->
+        Regex.replace(~r"%{(\w+)}", msg, fn _, key ->
+          opts |> Keyword.get(String.to_existing_atom(key), key) |> to_string()
+        end)
+      end)
 
-      carparks = Govt.nearest_available_carparks(current_location)
-      render(conn, "nearest.json", carparks: carparks)
-    end
+    errors
+    |> Enum.map(fn {key, errors} -> "#{key}: #{Enum.join(errors, ", ")}" end)
+    |> Enum.join("\n")
   end
 
   def index(conn, _params) do

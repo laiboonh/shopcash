@@ -24,6 +24,17 @@ defmodule ShopcashWeb.CarparkControllerTest do
   end
 
   describe "nearest" do
+    test "when required params latitude or longitude are not given", %{conn: conn} do
+      conn =
+        get(
+          conn,
+          Routes.carpark_path(conn, :nearest)
+        )
+
+      assert json_response(conn, 400) ==
+               %{"message" => "latitude: can't be blank\nlongitude: can't be blank"}
+    end
+
     test "list all nearest available carparks", %{conn: conn} do
       carpark_a = Enum.into(%{number: "A"}, @create_attrs)
 

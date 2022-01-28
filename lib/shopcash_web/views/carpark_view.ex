@@ -2,6 +2,10 @@ defmodule ShopcashWeb.CarparkView do
   use ShopcashWeb, :view
   alias ShopcashWeb.CarparkView
 
+  def render("error.json", %{message: message}) do
+    %{message: message}
+  end
+
   def render("nearest.json", %{carparks: carparks}) do
     render_many(carparks, CarparkView, "availability.json")
   end
