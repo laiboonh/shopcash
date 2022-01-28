@@ -4,6 +4,7 @@ defmodule Shopcash.GovtTest do
   import Mox
 
   alias Shopcash.Govt
+  alias Shopcash.Govt.Location
 
   # Make sure mocks are verified when the test exits
   setup :verify_on_exit!
@@ -14,6 +15,37 @@ defmodule Shopcash.GovtTest do
     import Shopcash.GovtFixtures
 
     @invalid_attrs %{address: nil, latitude: nil, longitude: nil}
+
+    test "nearest_carparks/1" do
+      # no available lots
+      carparkA = carpark_fixture(%{number: "A"})
+
+      # 1.305854174453145, 103.85533986268689 #Jalan Besar MRT
+      # 1.3039117948260748, 103.85260083492733 #Rochor MRT
+      # 1.3032301909161217, 103.85291996616341 #Sim Lim Sq
+
+      carparkB =
+        carpark_fixture(%{
+          number: "B",
+          latitude: 1.305854174453145,
+          longitude: 103.85533986268689,
+          available_lots: 10
+        })
+
+      carparkC =
+        carpark_fixture(%{
+          number: "C",
+          latitude: 1.3039117948260748,
+          longitude: 103.85260083492733,
+          available_lots: 5
+        })
+
+      assert [^carparkC, ^carparkB] =
+               Govt.nearest_available_carparks(%Location{
+                 latitude: 1.3032301909161217,
+                 longitude: 103.85291996616341
+               })
+    end
 
     test "load_availability/0 updates availablity information for carparks mentioned in external data source" do
       carpark = carpark_fixture()
