@@ -12,6 +12,29 @@ defmodule Shopcash.Govt do
 
   @carpark_information_file "../../priv/hdb-carpark-information.csv"
 
+  def load_availability() do
+    Shopcash.Api.Carpark.carpark_availability()
+    |> Enum.each(fn info ->
+      number = info["carpark_number"]
+      {total_lots, available_lots} = aggregate_carpark_info(info["carpark_info"])
+      update_availability(number, total_lots, available_lots)
+    end)
+  end
+
+  defp aggregate_carpark_info(carpark_info) do
+    Enum.reduce(carpark_info, {0, 0}, fn elem, {total, available} ->
+      %{"total_lots" => t, "lots_available" => a} = elem
+      {t, ""} = Integer.parse(t)
+      {a, ""} = Integer.parse(a)
+      {total + t, available + a}
+    end)
+  end
+
+  def update_availability(number, total_lots, available_lots) do
+    q = from "carparks", where: [number: ^number]
+    Repo.update_all(q, set: [total_lots: total_lots, available_lots: available_lots])
+  end
+
   def load_carparks(file \\ @carpark_information_file) do
     file
     |> Path.expand(__DIR__)

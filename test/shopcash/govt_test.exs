@@ -15,6 +15,39 @@ defmodule Shopcash.GovtTest do
 
     @invalid_attrs %{address: nil, latitude: nil, longitude: nil}
 
+    test "load_availability/0 updates availablity information for carparks mentioned in external data source" do
+      carpark = carpark_fixture()
+
+      data = [
+        %{
+          "carpark_info" => [
+            %{
+              "lot_type" => "C",
+              "lots_available" => "278",
+              "total_lots" => "511"
+            },
+            %{
+              "lot_type" => "X",
+              "lots_available" => "1",
+              "total_lots" => "1"
+            }
+          ],
+          "carpark_number" => "some number",
+          "update_datetime" => "2022-01-28T08:54:46"
+        }
+      ]
+
+      Shopcash.Govt.Http.MockClient
+      |> expect(:carpark_availability, fn ->
+        data
+      end)
+
+      assert :ok = Govt.load_availability()
+      carpark = Govt.get_carpark!(carpark.id)
+      assert carpark.total_lots == 512
+      assert carpark.available_lots == 279
+    end
+
     test "load_carparks/0 loads all file data into database" do
       data = """
       "car_park_no","address","x_coord","y_coord","car_park_type","type_of_parking_system","short_term_parking","free_parking","night_parking","car_park_decks","gantry_height","car_park_basement"
@@ -84,6 +117,14 @@ defmodule Shopcash.GovtTest do
 
     test "create_carpark/1 with invalid data returns error changeset" do
       assert {:error, %Ecto.Changeset{}} = Govt.create_carpark(@invalid_attrs)
+    end
+
+    test "update_availability/3 with valid data updates avaiability" do
+      carpark = carpark_fixture()
+      assert {1, nil} = Govt.update_availability(carpark.number, 20, 10)
+      carpark = Govt.get_carpark!(carpark.id)
+      assert carpark.total_lots == 20
+      assert carpark.available_lots == 10
     end
 
     test "update_carpark/2 with valid data updates the carpark" do
