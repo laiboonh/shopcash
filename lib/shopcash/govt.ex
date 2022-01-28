@@ -36,22 +36,26 @@ defmodule Shopcash.Govt do
   end
 
   def load_carparks(file \\ @carpark_information_file) do
-    file
-    |> Path.expand(__DIR__)
-    |> File.stream!()
-    |> CSV.parse_stream()
-    |> Stream.map(fn [car_park_no, address, x_coord, y_coord | _tail] ->
-      location = Location.new(x_coord, y_coord)
+    if Enum.empty?(list_carparks()) do
+      file
+      |> Path.expand(__DIR__)
+      |> File.stream!()
+      |> CSV.parse_stream()
+      |> Stream.map(fn [car_park_no, address, x_coord, y_coord | _tail] ->
+        location = Location.new(x_coord, y_coord)
 
-      {:ok, _} =
-        create_carpark(%{
-          number: car_park_no,
-          address: address,
-          latitude: location.latitude,
-          longitude: location.longitude
-        })
-    end)
-    |> Stream.run()
+        {:ok, _} =
+          create_carpark(%{
+            number: car_park_no,
+            address: address,
+            latitude: location.latitude,
+            longitude: location.longitude
+          })
+      end)
+      |> Stream.run()
+    else
+      :ok
+    end
   end
 
   def nearest_available_carparks(current_location) do
