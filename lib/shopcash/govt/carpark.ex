@@ -7,6 +7,8 @@ defmodule Shopcash.Govt.Carpark do
     field :address, :string
     field :latitude, :decimal
     field :longitude, :decimal
+    field :total_lots, :integer, default: 0
+    field :available_lots, :integer, default: 0
 
     timestamps()
   end
@@ -14,7 +16,7 @@ defmodule Shopcash.Govt.Carpark do
   @doc false
   def changeset(carpark, attrs) do
     carpark
-    |> cast(attrs, [:number, :address, :latitude, :longitude])
+    |> cast(attrs, [:number, :address, :latitude, :longitude, :total_lots, :available_lots])
     |> validate_required([:number, :address, :latitude, :longitude])
     |> unique_constraint(:number)
   end
