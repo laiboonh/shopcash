@@ -18,13 +18,13 @@ defmodule Shopcash.GovtTest do
 
     test "nearest_carparks/1" do
       # no available lots
-      carparkA = carpark_fixture(%{number: "A"})
+      _carpark_a = carpark_fixture(%{number: "A"})
 
       # 1.305854174453145, 103.85533986268689 #Jalan Besar MRT
       # 1.3039117948260748, 103.85260083492733 #Rochor MRT
       # 1.3032301909161217, 103.85291996616341 #Sim Lim Sq
 
-      carparkB =
+      carpark_b =
         carpark_fixture(%{
           number: "B",
           latitude: 1.305854174453145,
@@ -32,7 +32,7 @@ defmodule Shopcash.GovtTest do
           available_lots: 10
         })
 
-      carparkC =
+      carpark_c =
         carpark_fixture(%{
           number: "C",
           latitude: 1.3039117948260748,
@@ -40,7 +40,7 @@ defmodule Shopcash.GovtTest do
           available_lots: 5
         })
 
-      assert [^carparkC, ^carparkB] =
+      assert [^carpark_c, ^carpark_b] =
                Govt.nearest_available_carparks(%Location{
                  latitude: 1.3032301909161217,
                  longitude: 103.85291996616341
@@ -106,8 +106,8 @@ defmodule Shopcash.GovtTest do
 
         [first, second] = Govt.list_carparks()
 
-        latitude = Decimal.from_float(1.23)
-        longitude = Decimal.from_float(4.56)
+        latitude = 1.23
+        longitude = 4.56
 
         assert %Shopcash.Govt.Carpark{
                  latitude: ^latitude,
@@ -143,8 +143,8 @@ defmodule Shopcash.GovtTest do
 
       assert {:ok, %Carpark{} = carpark} = Govt.create_carpark(valid_attrs)
       assert carpark.address == "some address"
-      assert carpark.latitude == Decimal.new("120.5")
-      assert carpark.longitude == Decimal.new("120.5")
+      assert carpark.latitude == 120.5
+      assert carpark.longitude == 120.5
     end
 
     test "create_carpark/1 with invalid data returns error changeset" do
@@ -165,8 +165,8 @@ defmodule Shopcash.GovtTest do
 
       assert {:ok, %Carpark{} = carpark} = Govt.update_carpark(carpark, update_attrs)
       assert carpark.address == "some updated address"
-      assert carpark.latitude == Decimal.new("456.7")
-      assert carpark.longitude == Decimal.new("456.7")
+      assert carpark.latitude == 456.7
+      assert carpark.longitude == 456.7
     end
 
     test "update_carpark/2 with invalid data returns error changeset" do

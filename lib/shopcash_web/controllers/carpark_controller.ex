@@ -3,8 +3,44 @@ defmodule ShopcashWeb.CarparkController do
 
   alias Shopcash.Govt
   alias Shopcash.Govt.Carpark
+  alias Shopcash.Govt.Location
 
   action_fallback ShopcashWeb.FallbackController
+
+  defp nearest_params(params) do
+    default = %{
+      latitude: nil,
+      longitude: nil
+    }
+
+    types = %{
+      latitude: :float,
+      longitude: :float
+    }
+
+    changeset =
+      {default, types}
+      |> Ecto.Changeset.cast(params, Map.keys(types))
+      |> Ecto.Changeset.validate_required([:latitude, :longitude])
+
+    if changeset.valid? do
+      {:ok, Ecto.Changeset.apply_changes(changeset)}
+    else
+      {:error, changeset}
+    end
+  end
+
+  def nearest(conn, params) do
+    with {:ok, valid_params} <- nearest_params(params) do
+      current_location = %Location{
+        latitude: valid_params.latitude,
+        longitude: valid_params.longitude
+      }
+
+      carparks = Govt.nearest_available_carparks(current_location)
+      render(conn, "nearest.json", carparks: carparks)
+    end
+  end
 
   def index(conn, _params) do
     carparks = Govt.list_carparks()

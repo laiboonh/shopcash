@@ -59,8 +59,8 @@ defmodule Shopcash.Govt do
     |> Enum.filter(&(&1.available_lots > 0))
     |> Enum.map(fn carpark ->
       carpark_location = %Location{
-        latitude: Decimal.to_float(carpark.latitude),
-        longitude: Decimal.to_float(carpark.longitude)
+        latitude: carpark.latitude,
+        longitude: carpark.longitude
       }
 
       {Shopcash.Govt.Location.distance_in_km(current_location, carpark_location), carpark}

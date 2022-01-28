@@ -7,6 +7,7 @@ defmodule ShopcashWeb.Router do
 
   scope "/", ShopcashWeb do
     pipe_through :api
+    get "/carparks/nearest", CarparkController, :nearest
     resources "/carparks", CarparkController
   end
 end
