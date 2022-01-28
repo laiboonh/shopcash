@@ -3,18 +3,29 @@
 ## Description
 Provide REST API endpoint for user to find out the nearest carpark from given location (latitude, longitude) with available lots.
 
-## Prerequisite
-- Have elixir/erlang installed with mix working
+## How to start
+
+### Via docker-compose
+
+#### Prerequisite
+- Have docker desktop up and running
+- `docker-compose up -d` Observe the logs. This might take quite a while to boot up. It setups up database as well as populate it.
+- `curl "http://localhost:4000/carparks/nearest?latitude=1.37326&longitude=103.897&page=1&per_page=3"`
+
+### Via local environment
+
+#### Prerequisite
+- Have elixir/erlang installed with mix working.
 - Have a local postgresql installed and running. See `config/dev.exs` for local db configurations.
 
-## How to start using `carparks/nearest` API
-
-1. `mix.deps.get`
+#### Start
+1. `mix deps.get`
 2. `mix ecto.setup`
 3. `mix load_carpark`
 4. `mix load_availability`
 5. `mix phx.server`
 6. `curl "http://localhost:4000/carparks/nearest?latitude=1.37326&longitude=103.897&page=1&per_page=3"`
+
 
 ## Considerations
 
