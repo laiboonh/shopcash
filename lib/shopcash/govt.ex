@@ -54,6 +54,21 @@ defmodule Shopcash.Govt do
     |> Stream.run()
   end
 
+  def nearest_available_carparks(current_location) do
+    list_carparks()
+    |> Enum.filter(&(&1.available_lots > 0))
+    |> Enum.map(fn carpark ->
+      carpark_location = %Location{
+        latitude: carpark.latitude,
+        longitude: carpark.longitude
+      }
+
+      {Shopcash.Govt.Location.distance_in_km(current_location, carpark_location), carpark}
+    end)
+    |> Enum.sort(fn {distance1, _}, {distance2, _} -> distance1 < distance2 end)
+    |> Enum.map(fn {_distance, carpark} -> carpark end)
+  end
+
   @doc """
   Returns the list of carparks.
 

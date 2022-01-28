@@ -5,8 +5,8 @@ defmodule Shopcash.Govt.Carpark do
   schema "carparks" do
     field :number, :string
     field :address, :string
-    field :latitude, :decimal
-    field :longitude, :decimal
+    field :latitude, :float
+    field :longitude, :float
     field :total_lots, :integer, default: 0
     field :available_lots, :integer, default: 0
 

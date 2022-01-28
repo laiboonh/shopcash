@@ -23,6 +23,184 @@ defmodule ShopcashWeb.CarparkControllerTest do
     {:ok, conn: put_req_header(conn, "accept", "application/json")}
   end
 
+  describe "nearest" do
+    test "when page_num and page is less than 0", %{conn: conn} do
+      conn =
+        get(
+          conn,
+          Routes.carpark_path(conn, :nearest,
+            latitude: 1.3032301909161217,
+            longitude: 103.85291996616341,
+            page: -1,
+            per_page: -1
+          )
+        )
+
+      assert json_response(conn, 400) ==
+               %{"message" => "page: must be greater than 0\nper_page: must be greater than 0"}
+    end
+
+    test "when required params latitude or longitude are not given", %{conn: conn} do
+      conn =
+        get(
+          conn,
+          Routes.carpark_path(conn, :nearest)
+        )
+
+      assert json_response(conn, 400) ==
+               %{"message" => "latitude: can't be blank\nlongitude: can't be blank"}
+    end
+
+    test "list all nearest available carparks with pagination", %{conn: conn} do
+      carpark_a =
+        Enum.into(
+          %{
+            number: "A",
+            latitude: "1.315854174453145",
+            longitude: "102.85533986268689",
+            available_lots: "50",
+            total_lots: "25"
+          },
+          @create_attrs
+        )
+
+      carpark_b =
+        Enum.into(
+          %{
+            number: "B",
+            latitude: "1.305854174453145",
+            longitude: "103.85533986268689",
+            available_lots: "10",
+            total_lots: "20"
+          },
+          @create_attrs
+        )
+
+      carpark_c =
+        Enum.into(
+          %{
+            number: "C",
+            latitude: "1.3039117948260748",
+            longitude: "103.85260083492733",
+            available_lots: "5",
+            total_lots: "10"
+          },
+          @create_attrs
+        )
+
+      conn = post(conn, Routes.carpark_path(conn, :create), carpark: carpark_a)
+      conn = post(conn, Routes.carpark_path(conn, :create), carpark: carpark_b)
+      conn = post(conn, Routes.carpark_path(conn, :create), carpark: carpark_c)
+
+      conn =
+        get(
+          conn,
+          Routes.carpark_path(conn, :nearest,
+            latitude: 1.3032301909161217,
+            longitude: 103.85291996616341,
+            per_page: 2,
+            page: 1
+          )
+        )
+
+      assert json_response(conn, 200) == [
+               %{
+                 "address" => "some address",
+                 "available_lots" => 5,
+                 "latitude" => 1.3039117948260748,
+                 "longitude" => 103.85260083492733,
+                 "total_lots" => 10
+               },
+               %{
+                 "address" => "some address",
+                 "available_lots" => 10,
+                 "latitude" => 1.305854174453145,
+                 "longitude" => 103.85533986268689,
+                 "total_lots" => 20
+               }
+             ]
+
+      conn =
+        get(
+          conn,
+          Routes.carpark_path(conn, :nearest,
+            latitude: 1.3032301909161217,
+            longitude: 103.85291996616341,
+            per_page: 2,
+            page: 2
+          )
+        )
+
+      assert json_response(conn, 200) == [
+               %{
+                 "address" => "some address",
+                 "available_lots" => 50,
+                 "latitude" => 1.315854174453145,
+                 "longitude" => 102.85533986268689,
+                 "total_lots" => 25
+               }
+             ]
+    end
+
+    test "list all nearest available carparks", %{conn: conn} do
+      carpark_a = Enum.into(%{number: "A"}, @create_attrs)
+
+      carpark_b =
+        Enum.into(
+          %{
+            number: "B",
+            latitude: "1.305854174453145",
+            longitude: "103.85533986268689",
+            available_lots: "10",
+            total_lots: "20"
+          },
+          @create_attrs
+        )
+
+      carpark_c =
+        Enum.into(
+          %{
+            number: "C",
+            latitude: "1.3039117948260748",
+            longitude: "103.85260083492733",
+            available_lots: "5",
+            total_lots: "10"
+          },
+          @create_attrs
+        )
+
+      conn = post(conn, Routes.carpark_path(conn, :create), carpark: carpark_a)
+      conn = post(conn, Routes.carpark_path(conn, :create), carpark: carpark_b)
+      conn = post(conn, Routes.carpark_path(conn, :create), carpark: carpark_c)
+
+      conn =
+        get(
+          conn,
+          Routes.carpark_path(conn, :nearest,
+            latitude: 1.3032301909161217,
+            longitude: 103.85291996616341
+          )
+        )
+
+      assert json_response(conn, 200) == [
+               %{
+                 "address" => "some address",
+                 "available_lots" => 5,
+                 "latitude" => 1.3039117948260748,
+                 "longitude" => 103.85260083492733,
+                 "total_lots" => 10
+               },
+               %{
+                 "address" => "some address",
+                 "available_lots" => 10,
+                 "latitude" => 1.305854174453145,
+                 "longitude" => 103.85533986268689,
+                 "total_lots" => 20
+               }
+             ]
+    end
+  end
+
   describe "index" do
     test "lists all carparks", %{conn: conn} do
       conn = get(conn, Routes.carpark_path(conn, :index))
@@ -41,8 +219,8 @@ defmodule ShopcashWeb.CarparkControllerTest do
                "id" => ^id,
                "number" => "some number",
                "address" => "some address",
-               "latitude" => "120.5",
-               "longitude" => "120.5"
+               "latitude" => 120.5,
+               "longitude" => 120.5
              } = json_response(conn, 200)["data"]
     end
 
@@ -65,8 +243,8 @@ defmodule ShopcashWeb.CarparkControllerTest do
                "id" => ^id,
                "number" => "some updated number",
                "address" => "some updated address",
-               "latitude" => "456.7",
-               "longitude" => "456.7"
+               "latitude" => 456.7,
+               "longitude" => 456.7
              } = json_response(conn, 200)["data"]
     end
 
